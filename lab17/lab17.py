@@ -33,7 +33,7 @@ def log_error(code, message):
     abort(code, message=message)
 
 
-class ModbusAPI(Resource):
+class Lab17API(Resource):
     def get(self, device, function):
         if device in ["trm200", "trm202"]:
             port = d[lab_num][device]["port"]
@@ -60,6 +60,7 @@ class ModbusAPI(Resource):
                 data = client.read_holding_registers(start_address, count, unit=slave_id)
             except ConnectionException:
                 log_error(502, "Нет соединения с устройством")
+                print("jopa")
             except ModbusIOException:
                 log_error(502, "Нет ответа от устройства")
             except ParameterException:
@@ -80,7 +81,7 @@ class ModbusAPI(Resource):
                 reg_fields = {'Прибор': fields.String, 'Функция': fields.String, 'Значение': fields.Integer}
                 return {'Полученные значения': [marshal(reg, reg_fields) for reg in result]}
             else:
-                log_error(500, "Ошибка: {}".format(data))
+                log_error(502, "Ошибка: {}".format(data))
         else:
             log_error(404, message="Нет устройства {} в {}".format(device, lab_num))
 
@@ -128,9 +129,9 @@ class ModbusAPI(Resource):
                 lab17_logger.info(f"Лаб17, прибор {device}, функция {function}, значение {value} записано")
                 return {'Значение записано': True}
             else:
-                log_error(500, "Ошибка: {}".format(data))
+                log_error(502, "Ошибка: {}".format(data))
         else:
             log_error(404, message="Нет устройства {} в {}".format(device, lab_num))
 
 
-api.add_resource(ModbusAPI, '/lab17/<string:device>/<string:function>')
+api.add_resource(Lab17API, '/lab17/<string:device>/<string:function>')

@@ -35,7 +35,7 @@ def log_error(code, message):
     abort(code, message=message)
 
 
-class ModbusAPI(Resource):
+class Lab13API(Resource):
     def get(self, device, function):
         if device == "trm202:":
             port = d[lab_num][device]["port"]
@@ -80,7 +80,7 @@ class ModbusAPI(Resource):
                 reg_fields = {'Прибор': fields.String, 'Функция': fields.String, 'Значение': fields.Integer}
                 return {'Полученные значения': [marshal(reg, reg_fields) for reg in result]}
             else:
-                log_error(500, "Ошибка: {}".format(data))
+                log_error(502, "Ошибка: {}".format(data))
         else:
             log_error(404, "Нет устройства {} в {}".format(device, lab_num))
 
@@ -131,9 +131,9 @@ class ModbusAPI(Resource):
                 lab13_logger.info(f"Лаб13, прибор {device}, функция {function}, значение {value} записано")
                 return {'Значение записано': True}
             else:
-                log_error(500, "Ошибка: {}".format(data))
+                log_error(502, "Ошибка: {}".format(data))
         else:
             log_error(404, message="Нет устройства {} в {}".format(device, lab_num))
 
 
-api.add_resource(ModbusAPI, '/lab13/<string:device>/<string:function>')
+api.add_resource(Lab13API, '/lab13/<string:device>/<string:function>')

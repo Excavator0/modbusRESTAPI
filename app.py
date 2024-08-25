@@ -1,3 +1,5 @@
+import json
+
 from flask import Flask
 
 from lab12.lab12 import lab_12
@@ -11,7 +13,8 @@ app.register_blueprint(lab_12)
 app.register_blueprint(lab_13)
 app.register_blueprint(lab_14)
 app.register_blueprint(lab_17)
-
+with open('./config.json') as f:
+    d = json.load(f)
 
 if __name__ == "__main__":
-    app.run(debug=True, port=3000)
+    app.run(debug=False, port=d["port"])
