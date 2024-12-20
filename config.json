@@ -45,13 +45,13 @@
     }
   },
    "lab13": {
-    "trm202": {
+    "trm200": {
       "port": "COM5",
       "baudrate": 115200,
       "parity": "N",
       "stopbits": 2,
       "timeout": 0.2,
-      "slave_id": 1
+      "slave_id": 10
     }
   },
   "lab14": {

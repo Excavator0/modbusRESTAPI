@@ -37,7 +37,7 @@ def log_error(code, message):
 
 class Lab13API(Resource):
     def get(self, device, function):
-        if device == "trm202:":
+        if device == "trm200:":
             port = d[lab_num][device]["port"]
             baudrate = d[lab_num][device]["baudrate"]
             parity = d[lab_num][device]["parity"]
@@ -48,11 +48,11 @@ class Lab13API(Resource):
             client = ModbusClient(method='rtu', port=port, baudrate=baudrate,
                                   parity=parity, timeout=timeout, stopbits=stopbits)
             client.connect()
-            count = 1
-            if function == "get_pressure":
-                start_address = 1
-            elif function == "get_temp":
-                start_address = 2
+            count = 2
+            if function == "get_temp1":
+                start_address = 4105
+            elif function == "get_temp2":
+                start_address = 4107
             else:
                 log_error(404, message="Нет функции {}".format(function))
 
@@ -84,56 +84,56 @@ class Lab13API(Resource):
         else:
             log_error(404, "Нет устройства {} в {}".format(device, lab_num))
 
-    def post(self, device, function):
-        parser = reqparse.RequestParser(bundle_errors=True)
-        parser.add_argument("value", type=int, location="args")
-        query = parser.parse_args()
-        if device == "trm202":
-            port = d[lab_num][device]["port"]
-            baudrate = d[lab_num][device]["baudrate"]
-            parity = d[lab_num][device]["parity"]
-            timeout = d[lab_num][device]["timeout"]
-            slave_id = d[lab_num][device]["slave_id"]
-            stopbits = d[lab_num][device]["stopbits"]
-            value = query["value"]
-            client = ModbusClient(method='rtu', port=port, baudrate=baudrate,
-                                  parity=parity, timeout=timeout, stopbits=stopbits)
-            client.connect()
-            if (value == 0) or (value == 1):
-                if function == "set_valve":
-                    start_address = 5
-                elif function == "set_pressure":
-                    start_address = 6
-                else:
-                    log_error(404, "Нет функции {}".format(function))
-            else:
-                log_error(502, "Неверно введенное значение")
-
-            try:
-                data = client.write_register(start_address, value, unit=slave_id)
-            except ConnectionException:
-                log_error(502, "Нет соединения с устройством")
-            except ModbusIOException:
-                log_error(502, "Нет ответа от устройства")
-            except ParameterException:
-                log_error(502, "Неверные параметры соединения")
-            except NoSuchSlaveException:
-                log_error(502, "Нет устройства с id {}".format(slave_id))
-            except NotImplementedException:
-                log_error(502, "Нет данной функции")
-            except InvalidMessageReceivedException:
-                log_error(502, "Неверная контрольная сумма в ответе")
-            except MessageRegisterException:
-                log_error(502, "Неверный адрес регистра")
-            client.close()
-
-            if not data.isError():
-                lab13_logger.info(f"Лаб13, прибор {device}, функция {function}, значение {value} записано")
-                return {'Значение записано': True}
-            else:
-                log_error(502, "Ошибка: {}".format(data))
-        else:
-            log_error(404, message="Нет устройства {} в {}".format(device, lab_num))
+    # def post(self, device, function):
+    #     parser = reqparse.RequestParser(bundle_errors=True)
+    #     parser.add_argument("value", type=int, location="args")
+    #     query = parser.parse_args()
+    #     if device == "trm202":
+    #         port = d[lab_num][device]["port"]
+    #         baudrate = d[lab_num][device]["baudrate"]
+    #         parity = d[lab_num][device]["parity"]
+    #         timeout = d[lab_num][device]["timeout"]
+    #         slave_id = d[lab_num][device]["slave_id"]
+    #         stopbits = d[lab_num][device]["stopbits"]
+    #         value = query["value"]
+    #         client = ModbusClient(method='rtu', port=port, baudrate=baudrate,
+    #                               parity=parity, timeout=timeout, stopbits=stopbits)
+    #         client.connect()
+    #         if (value == 0) or (value == 1):
+    #             if function == "set_valve":
+    #                 start_address = 5
+    #             elif function == "set_pressure":
+    #                 start_address = 6
+    #             else:
+    #                 log_error(404, "Нет функции {}".format(function))
+    #         else:
+    #             log_error(502, "Неверно введенное значение")
+    #
+    #         try:
+    #             data = client.write_register(start_address, value, unit=slave_id)
+    #         except ConnectionException:
+    #             log_error(502, "Нет соединения с устройством")
+    #         except ModbusIOException:
+    #             log_error(502, "Нет ответа от устройства")
+    #         except ParameterException:
+    #             log_error(502, "Неверные параметры соединения")
+    #         except NoSuchSlaveException:
+    #             log_error(502, "Нет устройства с id {}".format(slave_id))
+    #         except NotImplementedException:
+    #             log_error(502, "Нет данной функции")
+    #         except InvalidMessageReceivedException:
+    #             log_error(502, "Неверная контрольная сумма в ответе")
+    #         except MessageRegisterException:
+    #             log_error(502, "Неверный адрес регистра")
+    #         client.close()
+    #
+    #         if not data.isError():
+    #             lab13_logger.info(f"Лаб13, прибор {device}, функция {function}, значение {value} записано")
+    #             return {'Значение записано': True}
+    #         else:
+    #             log_error(502, "Ошибка: {}".format(data))
+    #     else:
+    #         log_error(404, message="Нет устройства {} в {}".format(device, lab_num))
 
 
 api.add_resource(Lab13API, '/lab13/<string:device>/<string:function>')
